@@ -1,0 +1,86 @@
+<!--我的文章-->
+<%- include("header") %>
+<div class="container">
+    <% if(articles.length > 0 ){  %>
+    <ul>
+        <% articles.forEach(function(article){ %>
+        <li class="posts">
+            <a href="/articles?userid=<%= article.userid %> ">
+                <div class="title">
+                    <img class="userAvator" src="images/portrait/<%= article.file_name %>">
+                    <%- article.title %>
+                </div>
+                <div class="content">
+                    <%- article.content %>
+                </div>
+            </a>
+            <div class="author-info clearfix">
+                <p class='author fl'>
+                    <span style="color: #ff8300;cursor: pointer;">作者：<%= article.username%></span>
+                    <span>评论数：0</span>
+                    <span>浏览量：0</span>
+                </p>
+                <p class="fr">
+                    <span><%= article.create_time %></span>
+                </p>
+            </div>
+        </li>
+        <% }) %>
+    </ul>
+    <% }else{  %>
+    <p class="tips">暂时没有文章，快去前往发表吧</p>
+    <% } %>
+
+    <div class="comment-warp">
+        <form method="post">
+            <div class="form-group">
+                <textarea class="form-control" rows="5" id="comment" name="comment"  placeholder="评论"></textarea>
+            </div>
+            <button type="button" id="commentBtn" class="btn btn-success">留言</button>
+        </form>
+    </div>
+    <div class="comment-list">
+        <% if(comments.length > 0 ){  %>
+        <ul>
+            <% comments.forEach(function(comment){ %>
+            <li class="posts">
+                <a href="/articles?userid=<%= comment.userid %> ">
+                    <div class="title">
+                        <img class="userAvator" src="images/portrait/<%= comment.file_name %>">
+                        <%- comment.username %>
+                    </div>
+                    <div class="content">
+                        <%- comment.comment %>
+                    </div>
+                </a>
+                <span class='comment-time'><%= comment.create_time %></span>
+            </li>
+            <% }) %>
+        </ul>
+        <% }else{  %>
+        <p class="tips">暂时没有评论，快去前往发表吧</p>
+        <% } %>
+    </div>
+</div>
+<script>
+    $('#commentBtn').click(function () {
+        console.log('1')
+        $.ajax({
+            url: "/comment",
+            data: {
+                comment: $('textarea[name=comment]').val(),
+                article_id: "<%= articles[0]._id %>"
+            },
+            type: "POST",
+            success: function (res) {
+                if (res.code === 200) {
+                    window.location.reload();
+                }
+            },
+            err: function (err) {
+                console.log(err)
+            }
+        })
+    })
+</script>
+<%- include("footer") %>

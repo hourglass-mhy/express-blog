@@ -1,0 +1,39 @@
+<!--发表文章-->
+<%- include("header") %>
+<div class="page">
+    <div class="container">
+        <form method="post">
+            <div class="form-group">
+                <label for="title">标题</label>
+                <input type="text" class="form-control" name="title" id="title" placeholder="标题">
+            </div>
+            <div class="form-group">
+                <label for="content">内容</label>
+                <textarea class="form-control" rows="5" name="content" id="content" placeholder="内容"></textarea>
+            </div>
+            <button type="button" id="publishBtn" class="btn btn-success">发表</button>
+        </form>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $('#publishBtn').click(function () {
+        $.ajax({
+            url: "/publish",
+            data: {
+                title: $('input[name=title]').val(),
+                content: $('textarea[name=content]').val()
+            },
+            type: "POST",
+            success: function (res) {
+                if (res.code === 200) {
+                    window.location.href = '/articles'
+                }
+            },
+            err: function (err) {
+                console.log(err)
+            }
+        })
+    })
+</script>
+<%- include("footer") %>

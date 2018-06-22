@@ -1,0 +1,39 @@
+<%- include("header") %>
+<div class="page">
+    <div class="container">
+        <form id="signinForm" method="post">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" class="form-control" name="username" id="username" placeholder="用户名">
+            </div>
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" class="form-control"  name="password" id="password" placeholder="密码">
+            </div>
+            <button type="button" id="signinBtn" class="btn btn-success">登录</button>
+        </form>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $('#signinBtn').click(function () {
+        $.ajax({
+            url: "/signin",
+            data: {
+                username: $('input[name=username]').val(),
+                password: $('input[name=password]').val()
+            },
+            type: "POST",
+            success: function (res) {
+                console.log(res);
+                if (res.code === 200) {
+                    window.location.href = '/articles'
+                }
+            },
+            err: function (err) {
+                console.log(err)
+            }
+        })
+    })
+</script>
+<%- include("footer") %>
