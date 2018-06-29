@@ -2,7 +2,8 @@ var db = require('./db.js');
 var formidable = require('formidable');
 var path = require('path');
 var fs = require('fs');
-const moment = require('moment');
+var moment = require('moment');
+var md5 = require('./md5.js'); // 这是一个函数
 
 exports.postSignup = function (req,res,next) {
 	var form = new formidable.IncomingForm();
@@ -59,9 +60,11 @@ exports.postSignup = function (req,res,next) {
                     return
                 }
                 //文件更名成功
+                // md5加密密码 - 使用多层md5进行加密，防止进行枚举破译
+                var password = md5(md5(fields.password).substr(11,7) + md5('123456'));
                 var doc = {
                     username: fields.username,
-                    password: fields.password,
+                    password: password,
                     filePath: targetPath,
                     create_time: moment().format('YYYY-MM-DD HH:mm:ss')
                 };

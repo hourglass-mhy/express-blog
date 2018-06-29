@@ -18,4 +18,10 @@ router.post('/publish',model.postPublish)
 //根据文章id 发表评论
 router.post('/comment',model.postComment)
 
+//删除文章
+router.delete('/articles/remove',model.deleteArticle)
+
+//删除评论
+router.delete('/comment/remove',model.deleteComment)
+
 module.exports = router;

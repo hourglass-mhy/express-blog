@@ -45,42 +45,82 @@ exports.postPublish = function (req,res,next) {
 
 //获取文章
 exports.getArticles = function (req,res,next) {
-    if (req.query.id) {// 根据文章id进行查询
-        console.log('aaa',req.query.id);
+    if (req.query.id) {// 根据文章id进行查询 - 查询评论 浏览量
+        // 浏览量
+        var pv = 0;
+
         db.find('articles',{'_id': ObjectId(req.query.id)},function (err,articles) {
             var articles = articles;
-            //根据文章id查询所有评论
-            db.find('comments',{'article_id': req.query.id},function (err,comments) {
-                res.render('singleArticle',{
+            //每次先去查询浏览量 再+1
+            pv = articles[0].pv || 0;
+            pv ++ ;
+            articles[0].pv = pv;
+
+            //同步数据  更新浏览量
+            db.updateMany('articles',{'_id': ObjectId(req.query.id)},{$set:{'pv': pv}},function (err,result) {
+                if (err) {
+                    throw  err;
+                    return
+                }
+                //根据文章id查询所有评论
+                db.find('comments',{'article_id': req.query.id},{sortObj:{'create_time': -1}},function (err,comments) {
+                    if (err) {
+                        throw  err;
+                        return
+                    }
+                    res.render('singleArticle',{
+                        session: req.session,
+                        articles: articles,
+                        comments: comments
+                    })
+
+                })
+            });
+        })
+    } else if (req.query.userid) { //根据用户id进行查询- 查询评论
+        db.find('articles',{'userid': req.query.userid},{sortObj:{'create_time': -1}},function (err,articles) {
+            var newArticles = articles.concat();
+
+            db.find('comments',{},function (err,comments) {
+                newArticles.forEach(article => {
+                    var  comments_num = 0;
+                    comments.forEach(comment => {
+                        if (article._id == comment.article_id) {
+                            comments_num ++;
+                        }
+                    })
+                    article.comments_num = comments_num;
+                });
+                res.render('myArticle',{
                     session: req.session,
-                    articles: articles,
-                    comments: comments
+                    articles: newArticles
                 })
             })
-
         })
-    } else if (req.query.userid) { //根据用户id进行查询
-        db.find('articles',{'userid': req.query.userid},function (err,articles) {
-            res.render('myArticle',{
-                session: req.session,
-                articles: articles,
+    } else {// 查询所有 - 查询评论
+        db.find('articles',{},{sortObj:{'create_time': -1}},function (err,articles) {
+            var newArticles = articles.concat();
+            db.find('comments',{},function (err,comments) {
+                newArticles.forEach(article => {
+                    var  comments_num = 0;
+                    comments.forEach(comment => {
+                        if (article._id == comment.article_id) {
+                            comments_num ++;
+                        }
+                    })
+                    article.comments_num = comments_num;
+                });
+                res.render('articles',{
+                    session: req.session,
+                    result: newArticles,
+                })
             })
         })
-
-    }else {// 查询所有
-        db.find('articles',{},function (err,result) {
-            res.render('articles',{
-                session: req.session,
-                result: result
-            })
-        })
-
     }
 }
 
 //发表评论
 exports.postComment = function (req,res,next) {
-    console.log('comment',req.body)
     let { comment, article_id} = req.body,
         userid = req.session.userid,
         username = req.session.username;
@@ -113,6 +153,36 @@ exports.postComment = function (req,res,next) {
                 message: '发表评论成功'
             })
 
+        })
+    })
+}
+
+//删除评论
+exports.deleteComment = function (req,res,next) {
+    var { comment_id }   = req.body
+    db.deleteMany('comments',{'_id': ObjectId(comment_id)},function (err,result) {
+        if (err) {
+            throw err;
+            return;
+        }
+        res.json({
+            code: 200,
+            message: '删除成功'
+        })
+    })
+}
+
+//删除文章
+exports.deleteArticle = function (req,res,next) {
+    var { article_id } = req.body;
+    db.deleteMany('articles',{'_id': ObjectId(article_id)},function (err,result) {
+        if (err) {
+            throw err;
+            return;
+        }
+        res.json({
+            code: 200,
+            message: '删除成功'
         })
     })
 }

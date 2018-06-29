@@ -10,7 +10,6 @@ const MongoClient = require('mongodb').MongoClient;
 function _connectDB(callback) {
     var url = config.database.url;
     MongoClient.connect(url,function (err,client) {
-
         if (err) {
             callback(err,null);
             return
@@ -28,7 +27,7 @@ function _connectDB(callback) {
 exports.insertOne = function (collectionName,doc,callback) {
     // 连接数据库
     _connectDB(function (err,client) {
-        const db = client.db(config.database.dbName);
+        const db = client.db(config.dbName);
         db.collection(collectionName).insertOne(doc,function (err,result) {
             callback(err,result);
             client.close();
@@ -45,7 +44,7 @@ exports.insertOne = function (collectionName,doc,callback) {
 exports.deleteMany = function (collectionName,query,callback) {
     // 连接数据库
     _connectDB(function (err,client) {
-        const db = client.db(config.database.dbName);
+        const db = client.db(config.dbName);
         db.collection(collectionName).deleteMany(query,function (err,result) {
             callback(err,result);
             client.close();
@@ -63,7 +62,7 @@ exports.deleteMany = function (collectionName,query,callback) {
 exports.updateMany = function (collectionName,query,update,callback) {
     // 链接数据库
     _connectDB(function (err,client) {
-        const db = client.db(config.database.dbName);
+        const db = client.db(config.dbName);
         db.collection(collectionName).updateMany(query,update,function (err,result) {
             callback(err,result);
             client.close();
@@ -88,13 +87,13 @@ exports.find = function (collectionName,query,C,D) {
     } else {
         var callback = D;
         var options = C;
-        var limitNum = options.pageSize;
-        var skipNum = options.pageSize * options.pageNum;
+        var limitNum = options.pageSize || 0;
+        var skipNum = limitNum * (options.pageNum || 0);
         var sortObj = options.sortObj ;
     }
     // 链接数据库库
     _connectDB(function (err,client) {
-        const db = client.db(config.database.dbName);
+        const db = client.db(config.dbName);
         var cursor = db.collection(collectionName).find(query).limit(limitNum).skip(skipNum).sort(sortObj);
         cursor.each(function (err,doc) {
             if (err) {

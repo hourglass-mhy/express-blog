@@ -17,12 +17,15 @@
             <div class="author-info clearfix">
                 <p class='author fl'>
                     <span style="color: #ff8300;cursor: pointer;">作者：<%= article.username%></span>
-                    <span>评论数：0</span>
-                    <span>浏览量：0</span>
+                    <span>评论数：<%= article.comments_num%></span>
+                    <span>浏览量：<%= article.pv || 0 %></span>
                 </p>
                 <p class="fr">
                     <span><%= article.create_time %></span>
                 </p>
+            </div>
+            <div class="delete-btn" data-index="<%= article._id%>">
+                -
             </div>
         </li>
         <% }) %>
@@ -31,4 +34,25 @@
     <p class="tips">暂时没有文章，快去前往发表吧</p>
     <% } %>
 </div>
+<script>
+    $('.delete-btn').click(function () {
+        var article_id = $(this).attr('data-index');
+        $.ajax({
+            url: "/articles/remove",
+            data: {
+                article_id: article_id
+            },
+            type: "delete",
+            success: function (res) {
+                if (res.code === 200) {
+                    window.location.reload();
+                }
+            },
+            err: function (err) {
+                console.log(err)
+            }
+        })
+    })
+
+</script>
 <%- include("footer") %>
